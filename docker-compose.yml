@@ -1,0 +1,13 @@
+bot:
+  build: .
+  volumes_from:
+    - data
+  environment:
+    - NODE_ENV=production
+  restart: always
+
+data:
+  image: busybox
+  volumes:
+    - /usr/src/app/data
+  command: /bin/true

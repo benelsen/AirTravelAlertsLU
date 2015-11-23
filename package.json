@@ -1,0 +1,25 @@
+{
+  "name": "ellxbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.es5.js",
+    "build": "babel index.js -o index.es5.js"
+  },
+  "author": "Ben Elsen <mail@benelsen.com> (https://benelsen.com/)",
+  "license": "ISC",
+  "dependencies": {
+    "deep-diff": "^0.3.3",
+    "fast-json-patch": "^0.5.4",
+    "moment": "^2.10.6",
+    "node-fetch": "^1.3.3",
+    "ramda": "^0.18.0",
+    "rx": "^4.0.7",
+    "twit": "^2.1.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.2.0",
+    "babel-preset-es2015": "^6.1.18"
+  }
+}
