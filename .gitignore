@@ -1,3 +1,6 @@
-node_modules
 index.es5.js
-data
+
+node_modules/
+data/
+
+!data/config.example.json
