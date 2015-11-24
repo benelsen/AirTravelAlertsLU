@@ -71,7 +71,7 @@ const calcTimeDiff = data => {
   const scheduled = hhmmDate(getTimeField('scheduled', data))
   let estimated = hhmmDate(getTimeField('estimated', data))
 
-  if ( estimated.isBefore(scheduled) ) {
+  if ( estimated.isBefore(scheduled.clone().subtract(6, 'hours')) ) {
     estimated.add(1, 'day')
   }
 
