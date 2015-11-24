@@ -67,7 +67,16 @@ const dropLastOne = slice(0, -1)
 const upperFirstOne = adjust(toUpper, 0)
 const getTimeField = curry( (what, data) => prop(`${what}${compose(join(''), upperFirstOne, dropLastOne)(data.type)}`)(data) )
 
-const calcTimeDiff = data => hhmmDate(getTimeField('estimated', data)).diff(hhmmDate(getTimeField('scheduled', data)), 'minutes')
+const calcTimeDiff = data => {
+  const scheduled = hhmmDate(getTimeField('scheduled', data))
+  let estimated = hhmmDate(getTimeField('estimated', data))
+
+  if ( estimated.isBefore(scheduled) ) {
+    estimated.add(1, 'day')
+  }
+
+  return estimated.diff(scheduled, 'minutes')
+}
 
 const findChanges = ([previous, current]) => {
 
