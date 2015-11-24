@@ -3,8 +3,8 @@
 import Twitter from 'twit'
 import fetch from 'node-fetch'
 import {
-  compose, prop, map, curry, assoc, flatten, eqProps, propEq, propSatisfies,
-  not, flip, contains, merge, slice, toUpper, adjust, join, props, ifElse,
+  compose, prop, map, curry, assoc, flatten, eqProps, propEq, propSatisfies, over, lensProp,
+  replace, not, flip, contains, merge, slice, toUpper, adjust, join, props, ifElse, split,
 } from 'ramda'
 import moment from 'moment'
 import util from 'util'
@@ -46,10 +46,8 @@ const postTweet = Rx.Observable.fromCallback(
   (err, data) => data
 )
 
-const fakeTweet = status => ({created_at: moment.utc().format(), text: status, id_str: 0})
-
 const fakePostTweet = Rx.Observable.fromCallback(
-  (status, callback) => callback(null, fakeTweet(status)),
+  (status, callback) => callback(null, {created_at: moment.utc().format(), text: status, id_str: 0}),
   twitter,
   (err, data) => data
 )
@@ -117,28 +115,27 @@ const createEventType = data => {
 const createTweets = data => {
 
   const diff = `${Math.abs(data.diff)} ${Math.abs(data.diff) === 1 ? 'minute' : 'minutes'}`
-  const flightNumber = data.flightNumber.replace('-','')
-
-  let text
 
   const via = data.viaAirport ? ` via ${data.viaAirport.name} #${data.viaAirport.code}` : ''
   const lateEarly = data.diff && data.diff <= 0 ? 'early' : 'late'
 
+  let text
+
   switch (data.status_type) {
   case 'cancelled':
     if ( data.type === 'departures' ) {
-      text = `Luxair flight #${flightNumber} to ${data.arrivalAirport.name} #${data.arrivalAirport.code}${via} at ${data.scheduledDeparture} has been cancelled.`
+      text = `Luxair flight #${data.flightNumber} to ${data.arrivalAirport.name} #${data.arrivalAirport.code}${via} at ${data.scheduledDeparture} has been cancelled.`
     } else {
-      text = `Luxair flight #${flightNumber} from ${data.departureAirport.name} #${data.departureAirport.code}${via} at ${data.scheduledArrival} has been cancelled.`
+      text = `Luxair flight #${data.flightNumber} from ${data.departureAirport.name} #${data.departureAirport.code}${via} at ${data.scheduledArrival} has been cancelled.`
     }
     break
   case 'init_delayed_departure':
   case 'init_early_departure':
-    text = `Luxair flight #${flightNumber} to ${data.arrivalAirport.name} #${data.arrivalAirport.code}${via} is expected to depart ${diff} ${lateEarly} at ${data.estimatedDeparture} from gate ${data.terminal}${data.gate}.`
+    text = `Luxair flight #${data.flightNumber} to ${data.arrivalAirport.name} #${data.arrivalAirport.code}${via} is expected to depart ${diff} ${lateEarly} at ${data.estimatedDeparture} from gate ${data.terminal}${data.gate}.`
     break
   case 'init_delayed_arrival':
   case 'init_early_arrival':
-    text = `Luxair flight #${flightNumber} from ${data.departureAirport.name} #${data.departureAirport.code}${via} is expected to arrive ${diff} ${lateEarly} at ${data.estimatedArrival}.`
+    text = `Luxair flight #${data.flightNumber} from ${data.departureAirport.name} #${data.departureAirport.code}${via} is expected to arrive ${diff} ${lateEarly} at ${data.estimatedArrival}.`
     break
   }
 
@@ -148,8 +145,13 @@ const createTweets = data => {
   }, data)
 }
 
+const parseBase10Integer = (string) => parseInt(string, 10)
+
+const normaliseFlightNumber = compose( join(''), adjust(parseBase10Integer, 1), split('-') )
+
 const intervalStream = Rx.Observable.interval(fetchInterval).startWith(0)
-const responseStream = intervalStream.flatMap(fetchData).startWith(initialState).tap(saveStateToDisk)
+const responseStream = intervalStream.flatMap(fetchData).startWith(initialState)
+  .map(map(over(lensProp('flightNumber'), normaliseFlightNumber))).tap(saveStateToDisk)
 const changedFlights = responseStream.pairwise().flatMap(findChanges)
 const delayedflights = changedFlights.filter(propSatisfies(compose(not, flip(contains)(['ARR', 'DEP'])), 'flightStatusCode'))
 const eventstream = delayedflights.map(createEventType)
