@@ -122,7 +122,7 @@ const createTweets = data => {
   let text
 
   const via = data.viaAirport ? ` via ${data.viaAirport.name} #${data.viaAirport.code}` : ''
-  const lateEarly = data.diff && data.diff <= 0 ? 'late' : 'early'
+  const lateEarly = data.diff && data.diff <= 0 ? 'early' : 'late'
 
   switch (data.status_type) {
   case 'cancelled':
