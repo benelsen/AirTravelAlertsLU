@@ -89,6 +89,10 @@ const findChanges = ([previous, current]) => {
 
 const createEventType = data => {
 
+  if ( data.flightStatus === 'Cancelled' ) {
+    return assoc('status_type', 'cancelled', data)
+  }
+
   const timeDiff = calcTimeDiff(data)
   if ( Math.abs(timeDiff) > 10 ) {
 
@@ -109,9 +113,16 @@ const createTweets = data => {
   let text
 
   const via = data.viaAirport ? ` via ${data.viaAirport.name} #${data.viaAirport.code}` : ''
-  const lateEarly = data.diff > 0 ? 'late' : 'early'
+  const lateEarly = data.diff && data.diff <= 0 ? 'late' : 'early'
 
   switch (data.status_type) {
+  case 'cancelled':
+    if ( data.type === 'departures' ) {
+      text = `Luxair flight #${flightNumber} to ${data.arrivalAirport.name} #${data.arrivalAirport.code}${via} at ${data.scheduledDeparture} has been cancelled.`
+    } else {
+      text = `Luxair flight #${flightNumber} from ${data.departureAirport.name} #${data.departureAirport.code}${via} at ${data.scheduledArrival} has been cancelled.`
+    }
+    break
   case 'init_delayed_departure':
   case 'init_early_departure':
     text = `Luxair flight #${flightNumber} to ${data.arrivalAirport.name} #${data.arrivalAirport.code}${via} is expected to depart ${diff} ${lateEarly} at ${data.estimatedDeparture} from gate ${data.terminal}${data.gate}.`
