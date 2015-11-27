@@ -5,7 +5,9 @@
   "main": "lib5/index.js",
   "scripts": {
     "start": "node lib5/index.js",
-    "build": "babel lib/ -d lib5/"
+    "prepublish": "npm run lint && npm run build",
+    "build": "babel lib/ -d lib5/",
+    "lint": "eslint lib/"
   },
   "author": "Ben Elsen <mail@benelsen.com> (https://benelsen.com/)",
   "license": "ISC",
