@@ -21,8 +21,7 @@
     "ramda": "^0.18.0",
     "rx": "^4.0.7",
     "twit": "^2.1.1",
-    "winston": "^2.1.1",
-    "winston-pushover": "^0.1.7"
+    "winston": "^2.1.1"
   },
   "devDependencies": {
     "babel-cli": "^6.3.17",
